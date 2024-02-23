@@ -1,1 +1,1 @@
-from genetok import layers, genepool, tokenizer
+from . import genepool, tokenizer, layers

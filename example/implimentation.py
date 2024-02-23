@@ -1,6 +1,6 @@
 from datasets import load_dataset
 from tqdm import tqdm
-from genetok.tokenizer import GeneticTokenizer
+from genetok import GeneticTokenizer
 
 # Load the dataset
 dataset = load_dataset("JeanKaddour/minipile")

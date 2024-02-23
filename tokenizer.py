@@ -2,7 +2,7 @@ import numpy as np
 from Finch.layers import Populate, CapPopulation, SortByFitness
 from Finch.environments import Sequential
 from genetok.layers import *
-from genetok.genepool import *
+from genepool import *
 import pickle
 from tqdm import tqdm
 
