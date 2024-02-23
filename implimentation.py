@@ -1,31 +1,29 @@
 from datasets import load_dataset
-from genetok import GeneticTokenizer
+from tqdm import tqdm
+from genetok.tokenizer import GeneticTokenizer
 
+# Load the dataset
 dataset = load_dataset("JeanKaddour/minipile")
-train = dataset["train"]
-# Create an iterator from the dataset
+train_data = dataset["train"]
+test_data = dataset["test"][0]['text']  # Taking only the first text for testing
+
+# Processing the training data
+print("Processing dataset...")
 data = []
-last = ""
-length = len(train)
-current = 0
-for sentence in train:
-    current += 1
-    if current % 500 == 0:
-        print(current/length)
-    last += sentence['text']
-    if len(last) > 10000:
-        data.append(last)
-        last = ""
-    if current > 10000:
-        break
+combined_text = ""
+for sentence in tqdm(train_data, total=len(train_data), desc="Processing dataset", colour="green"):
+    combined_text += sentence['text']
+    if len(combined_text) > 10000:
+        data.append(combined_text)
+        combined_text = ""
 
-test = dataset["test"]
-test_data = ""
-for i in range(1):
-    test_data += test[i]['text']
-
-print("tokenizing")
-tokenizer = GeneticTokenizer(2)
-
+# Tokenizing
+print("Tokenizing...")
+tokenizer = GeneticTokenizer(4)
 tokenizer.evolve(data)
+# Optionally save or load tokenizer
+# tokenizer.save("tokenizer")
+# tokenizer.load("tokenizer")
+
+# Using the tokenizer interface
 tokenizer.interface()

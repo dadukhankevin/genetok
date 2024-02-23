@@ -1,12 +1,10 @@
 import numpy as np
 from Finch.layers import Populate, CapPopulation, SortByFitness
 from Finch.environments import Sequential
-from layers import *
-from genepool import *
-from typing import Union
-import string
-
-
+from genetok.layers import *
+from genetok.genepool import *
+import pickle
+from tqdm import tqdm
 
 ## todo identify gaps based on the halving rule
 class GeneticTokenizer:
@@ -18,13 +16,10 @@ class GeneticTokenizer:
 
     def evolve(self, dataset):
         total = len(dataset)
-        n = 0
-        for text in dataset:
-            n += 1
-            self.step(text)
-            if n % 2000 == 0:
-                print(f"step: {n} of {total}")
-
+        with tqdm(total=total, desc="Evolving tokenizer") as pbar:
+            for text in dataset:
+                self.step(text)
+                pbar.update(1)
 
     def step(self, text: str):
         pool = RangePool(min_range=1, max_range=6, source_text=text)
@@ -67,7 +62,6 @@ class GeneticTokenizer:
         """
         indices = []
         i = 0
-        input(len(text))
         while i < len(text):
             matched = False
             for token in sorted(self.tokens, key=len, reverse=True):  # Sort tokens by length, descending
@@ -85,6 +79,7 @@ class GeneticTokenizer:
         Detokenize the given list of indices into the original text.
         """
         return '|'.join(self.tokens[i] for i in indices)
+
     def narrow(self, text):
         characters = np.unique(np.asarray(list(text)))
         self.tokens.extend(characters)
@@ -96,10 +91,31 @@ class GeneticTokenizer:
         self.tokens = self.tokens[unique].tolist()
         print("length: ", len(self.tokens))
 
-
     def interface(self):
         while 1:
             toks = self.tokenize(input("tokens: "))
             print("tokens: ", toks)
             print("detokens: ", self.detokenize(toks))
 
+
+    def save(self, filename):
+        """
+        Save the state of the GeneticTokenizer object to a file.
+        """
+        with open(filename+".gentok", 'wb') as f:
+            pickle.dump({
+                'fitness_results': self.fitness_results,
+                'tokens': self.tokens,
+                'step_epochs': self.step_epochs,
+                'last_iteration': self.last_iteration
+            }, f)
+
+    def load(self, filename):
+        """
+        Load the state of the GeneticTokenizer object from a file and return a new instance.
+        """
+        with open(filename+".gentok", 'rb') as f:
+            data = pickle.load(f)
+        self.tokens = data['tokens']
+        self.fitness_results = data['fitness_results']
+        self.last_iteration = data['last_iteration']
