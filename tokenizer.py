@@ -8,10 +8,12 @@ from tqdm import tqdm
 
 ## todo identify gaps based on the halving rule
 class GeneticTokenizer:
-    def __init__(self, step_epochs: int = 1, existing_tokens: list = []):
+    def __init__(self, min_range=2, max_range=6, step_epochs: int = 1, existing_tokens: list = []):
         self.fitness_results = {}  # for speed boost
         self.tokens = existing_tokens
         self.step_epochs = step_epochs
+        self.min_range = min_range
+        self.max_range = max_range
         self.last_iteration = 0
 
     def evolve(self, dataset):
@@ -22,7 +24,7 @@ class GeneticTokenizer:
                 pbar.update(1)
 
     def step(self, text: str):
-        pool = RangePool(min_range=1, max_range=6, source_text=text)
+        pool = RangePool(min_range=self.min_range, max_range=self.max_range, source_text=text)
 
         max_population = 10
         start_population = 11
