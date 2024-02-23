@@ -1,5 +1,5 @@
 import random
-from genetok.layers import RangeToken
+from .layers import RangeToken
 from Finch import genepools, layers
 
 
