@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from Finch.layers import Populate, CapPopulation, SortByFitness
 from Finch.environments import Sequential
@@ -7,15 +9,20 @@ import pickle
 from tqdm import tqdm
 
 
-## todo identify gaps based on the halving rule
+# todo identify gaps based on the halving rule
 class GeneticTokenizer:
-    def __init__(self, min_range=2, max_range=6, step_epochs: int = 1, existing_tokens: list = []):
+    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5, famileis=2, step_epochs: int = 1, existing_tokens: list = []):
         self.fitness_results = {}  # for speed boost
         self.tokens = existing_tokens
         self.step_epochs = step_epochs
         self.min_range = min_range
         self.max_range = max_range
         self.last_iteration = 0
+        self.max_population = max_population
+        self.start_population = start_population
+        self.threshold = threshold
+        self.mutate_amount = mutate_amount
+        self.families = famileis
 
     def evolve(self, dataset):
         total = len(dataset)
@@ -27,21 +34,20 @@ class GeneticTokenizer:
     def step(self, text: str):
         pool = RangePool(min_range=self.min_range, max_range=self.max_range, source_text=text)
 
-        max_population = 10
-        start_population = 11
+        max_population = self.max_population
+        start_population = self.start_population
 
-        ## Create the environment
-
+        # Create the environment
         environment = Sequential(
             layers=[
                 Populate(gene_pool=pool, population=start_population),
-                MutateToken(individual_selection=5),
-                ParentToken(families=2, gene_pool=pool),
+                MutateToken(individual_selection=self.mutate_amount),
+                ParentToken(families=self.families, gene_pool=pool),
                 SortByFitness(),
                 CapPopulation(max_population)
             ]
         )
-        environment.compile(self.fitness, verbose_every=1)
+        environment.compile(self.fitness, verbose_every=False)
         environment.iteration = self.last_iteration
         environment.evolve(self.step_epochs)
         self.last_iteration = environment.iteration
@@ -53,7 +59,9 @@ class GeneticTokenizer:
 
         source_text = individual.source
         count = source_text.count(token)
-        if count > 5:
+        percent = count / individual.length
+
+        if percent > self.threshold:
             if token not in self.tokens:
                 self.tokens.append(token)
         self.fitness_results.update({token: count})
@@ -83,17 +91,6 @@ class GeneticTokenizer:
         """
         return '|'.join(self.tokens[i] for i in indices)
 
-    def narrow(self, text):
-        characters = np.unique(np.asarray(list(text)))
-        self.tokens.extend(characters)
-        print("length: ", len(self.tokens))
-
-        tokens = self.tokenize(text)
-        self.tokens = np.asarray(self.tokens)
-        unique = np.unique(np.asarray(tokens))
-        self.tokens = self.tokens[unique].tolist()
-        print("length: ", len(self.tokens))
-
     def interface(self):
         while 1:
             toks = self.tokenize(input("tokens: "))
@@ -116,8 +113,10 @@ class GeneticTokenizer:
         """
         Load the state of the GeneticTokenizer object from a file and return a new instance.
         """
+
         with open(filename + ".gentok", 'rb') as f:
             data = pickle.load(f)
+
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
         self.last_iteration = data['last_iteration']
