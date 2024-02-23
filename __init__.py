@@ -1,1 +1,1 @@
-from genetok import *
+from genetok import layers, genepool, tokenizer
