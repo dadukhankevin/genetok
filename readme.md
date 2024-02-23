@@ -10,6 +10,9 @@ GeneTok is a Python library that employs genetic algorithms to craft a tokenizer
 - **Serialization Support**: Enables saving and loading the tokenizer's state, facilitating easy reuse and distribution.
 - **Resumable Training**: Training sessions can be paused and resumed with entirely different texts, offering flexibility in model development.
 
+
+## Colab notebooks:
+- **simple example**: [genetok](https://colab.research.google.com/drive/1l2C2ruaRv2dZSmBanT9zgMET7kypIJ4u?usp=sharing). Quick overview of the library, train a tokenizer on a few GBs of text rather quickly,
 ## Installation
 
 GeneTok requires Python 3.6 or later. You can install GeneTok directly from the source code:
@@ -41,7 +44,7 @@ print("Original Text:", original_text)
 ## How It Works
 
 Genetok uses a genetic algorithm to evolve a set of tokens that are most effective for tokenizing a given text. It starts with a random set of tokens and 
-iteratively applies genetic operations such as mutation and crossover to evolve these tokens. The fitness of each token is determined based on its 
+iteratively applies genetic operations such as mutation and crossover to evolve these tokens. Each token is represented simply by it's start and end index in a source text. Mutation causes these ranges to change. Every time a good token is found it is added to the list. The fitness of each token is determined based on its 
 frequency and utility in the source text, guiding the selection process towards more effective tokenization strategies.
 
 ## Drawbacks:

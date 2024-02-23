@@ -6,6 +6,7 @@ from .genepool import *
 import pickle
 from tqdm import tqdm
 
+
 ## todo identify gaps based on the halving rule
 class GeneticTokenizer:
     def __init__(self, min_range=2, max_range=6, step_epochs: int = 1, existing_tokens: list = []):
@@ -99,12 +100,11 @@ class GeneticTokenizer:
             print("tokens: ", toks)
             print("detokens: ", self.detokenize(toks))
 
-
     def save(self, filename):
         """
         Save the state of the GeneticTokenizer object to a file.
         """
-        with open(filename+".gentok", 'wb') as f:
+        with open(filename + ".gentok", 'wb') as f:
             pickle.dump({
                 'fitness_results': self.fitness_results,
                 'tokens': self.tokens,
@@ -116,7 +116,7 @@ class GeneticTokenizer:
         """
         Load the state of the GeneticTokenizer object from a file and return a new instance.
         """
-        with open(filename+".gentok", 'rb') as f:
+        with open(filename + ".gentok", 'rb') as f:
             data = pickle.load(f)
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
