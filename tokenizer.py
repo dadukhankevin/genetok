@@ -1,3 +1,6 @@
+import math
+
+import numpy as np
 from Finch.layers import Populate, CapPopulation, SortByFitness
 from Finch.environments import Sequential
 from .layers import *
@@ -94,6 +97,8 @@ class GeneticTokenizer:
         if percent > self.threshold:
             if token not in self.tokens:
                 self.tokens.append(token)
+                # Update the trie with the new token
+                self.trie.insert(token, len(self.tokens) - 1)
         self.fitness_results.update({token: count})
         return count
 
@@ -146,3 +151,4 @@ class GeneticTokenizer:
         self.step_epochs = data['step_epochs']
         self.last_iteration = data['last_iteration']
         self.trie = data['trie']  # Load the Trie structure
+
