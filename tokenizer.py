@@ -34,24 +34,23 @@ class Trie:
         start_index = 0  # Start index of the current token being processed
 
         while start_index < len(text):
-            char = text[start_index]
             node = self.root  # Reset node to root for each new starting character
-            i = start_index
-            last_token_index = -1  # Reset last token index for each new starting character
-            token_length = 0  # Track the length of the last found token
+            longest_token_index = -1  # Initialize with -1 indicating no token found yet
+            longest_token_length = 0  # Length of the longest token found
 
-            while i < len(text) and char in node.children:
-                node = node.children[char]
-                if node.is_end_of_token:
-                    last_token_index = node.token_index  # Update last token index if current node marks the end of a token
-                    token_length = i - start_index + 1  # Update the length of the last found token
-                i += 1
-                if i < len(text):
-                    char = text[i]
+            for i in range(start_index, len(text)):
+                char = text[i]
+                if char in node.children:
+                    node = node.children[char]
+                    if node.is_end_of_token:
+                        longest_token_index = node.token_index  # Update if a longer token is found
+                        longest_token_length = i - start_index + 1
+                else:
+                    break  # Break the loop if current character is not in children
 
-            if last_token_index != -1:
-                tokens.append(last_token_index)  # Append the last found token index
-                start_index += token_length  # Move start index to the end of the last found token
+            if longest_token_index != -1:
+                tokens.append(longest_token_index)  # Append the longest token index found
+                start_index += longest_token_length  # Move start index to the end of the longest token
             else:
                 start_index += 1  # Move to the next character if no token was found
 
