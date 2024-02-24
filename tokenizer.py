@@ -120,3 +120,5 @@ class GeneticTokenizer:
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
         self.last_iteration = data['last_iteration']
+
+
