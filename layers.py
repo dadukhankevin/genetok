@@ -18,6 +18,7 @@ class RangeToken(Individual):
         self.left_frozen = False
         self.right_freezable = right_freezable
         self.left_freezable = left_freezable
+        self.handle_frozen()
 
         try:
             while self.token[0] == " ":
@@ -52,7 +53,9 @@ class RangeToken(Individual):
 
         if self.token == '':
             self.redo()
+        self.handle_frozen()
 
+    def handle_frozen(self):
         if self.right_freezable and self.left_freezable:
             while " " in self.token:
                 self.end -= 1
@@ -64,18 +67,18 @@ class RangeToken(Individual):
             self.right_frozen = False
 
         elif self.left_freezable:
-            while self.token[0] == " ":
+            while len(self.token) > 0 and self.token[0] == " ":
                 self.start += 1
                 if self.start == self.end:
-                    self.end += 1
+                    self.end += 2
                 self.token = self.source[self.start:self.end]
                 self.left_frozen = True
 
         elif self.right_freezable:
-            while self.token[-1] == " ":
+            while len(self.token) > 0 and self.token[-1] == " ":
                 self.end -= 1
                 if self.start == self.end:
-                    self.end -= 1
+                    self.start -= 2
                 self.token = self.source[self.start:self.end]
                 self.right_frozen = True
 
