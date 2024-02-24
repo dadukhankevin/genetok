@@ -1,12 +1,38 @@
-import math
-
-import numpy as np
 from Finch.layers import Populate, CapPopulation, SortByFitness
 from Finch.environments import Sequential
 from .layers import *
 from .genepool import *
 import pickle
 from tqdm import tqdm
+
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.token_index = -1  # -1 indicates no token ends here
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, token, index):
+        node = self.root
+        for char in token:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.token_index = index
+
+    def search(self, text):
+        node = self.root
+        for char in text:
+            if char in node.children:
+                node = node.children[char]
+                if node.token_index != -1:
+                    return node.token_index
+            else:
+                break
+        return -1
 
 
 # todo identify gaps based on the halving rule
@@ -23,6 +49,10 @@ class GeneticTokenizer:
         self.threshold = threshold
         self.mutate_amount = mutate_amount
         self.families = famileis
+        self.trie = Trie()
+        for i, token in enumerate(self.tokens):
+            self.trie.insert(token, i)  # Populate Trie with existing tokens
+
 
     def evolve(self, dataset):
         total = len(dataset)
@@ -68,21 +98,15 @@ class GeneticTokenizer:
         return count
 
     def tokenize(self, text):
-        """
-        Tokenize the given text into indices of tokens from the global `tokens` list.
-        """
         indices = []
         i = 0
         while i < len(text):
-            matched = False
-            for token in sorted(self.tokens, key=len, reverse=True):  # Sort tokens by length, descending
-                if text[i:].startswith(token):
-                    indices.append(self.tokens.index(token))
-                    i += len(token)
-                    matched = True
-                    break
-            if not matched:
-                i += 1  # Move to the next character if no token matches
+            token_index = self.trie.search(text[i:])
+            if token_index != -1:
+                indices.append(token_index)
+                i += len(self.tokens[token_index])
+            else:
+                i += 1
         return indices
 
     def detokenize(self, indices):
@@ -99,26 +123,26 @@ class GeneticTokenizer:
 
     def save(self, filename):
         """
-        Save the state of the GeneticTokenizer object to a file.
+        Save the state of the GeneticTokenizer object to a file, including the Trie.
         """
         with open(filename + ".gentok", 'wb') as f:
             pickle.dump({
                 'fitness_results': self.fitness_results,
                 'tokens': self.tokens,
                 'step_epochs': self.step_epochs,
-                'last_iteration': self.last_iteration
+                'last_iteration': self.last_iteration,
+                'trie': self.trie,  # Save the Trie structure
             }, f)
 
     def load(self, filename):
         """
-        Load the state of the GeneticTokenizer object from a file and return a new instance.
+        Load the state of the GeneticTokenizer object from a file, including the Trie.
         """
-
         with open(filename + ".gentok", 'rb') as f:
             data = pickle.load(f)
 
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
+        self.step_epochs = data['step_epochs']
         self.last_iteration = data['last_iteration']
-
-
+        self.trie = data['trie']  # Load the Trie structure
