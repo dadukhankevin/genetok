@@ -38,14 +38,14 @@ class RangeToken(Individual):
             self.start += left_mutation
 
         if not self.right_frozen and right_mutation == -1:
-            self.right += rigth_mutation
+            self.end += right_mutation
 
         if self.left_frozen and left_mutation == 1:
             self.start += left_mutation
             self.left_frozen = False
 
         if self.right_frozen and right_mutation == -1:
-            self.right += rigth_mutation
+            self.end += right_mutation
             self.right_frozen = False
 
         self.token = self.source[self.start:self.end]
