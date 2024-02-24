@@ -36,12 +36,12 @@ class Trie:
 
                 return self.search(text[i:-1], tokens, node)
             elif i >= len(tokens):
-                return node.token_index
+                return tokens
             else:
                 tokens.append(node.token_index)
                 return self.search(text[i:-1], tokens, 'root')
 
-        return node
+        return tokens
 
 
 # todo identify gaps based on the halving rule
@@ -109,15 +109,7 @@ class GeneticTokenizer:
         return count
 
     def tokenize(self, text):
-        indices = []
-        i = 0
-        while i < len(text):
-            token_index = self.trie.search(text[i:])
-            if token_index != -1:
-                indices.append(token_index)
-                i += len(self.tokens[token_index])
-            else:
-                i += 1
+        indices = self.trie.search(text)
         return indices
 
     def detokenize(self, indices):
