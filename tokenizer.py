@@ -118,8 +118,10 @@ class GeneticTokenizer:
                 self.tokens.append(token)
                 # Update the trie with the new token
                 self.trie.insert(token, len(self.tokens) - 1)
-        self.fitness_results.update({token: count})
-        return count
+        score = len(token) * percent
+        self.fitness_results.update({token: score})
+
+        return score
 
     def tokenize(self, text):
         indices = self.trie.search(text)
