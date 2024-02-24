@@ -26,16 +26,22 @@ class Trie:
             node = node.children[char]
         node.token_index = index
 
-    def search(self, text):
-        node = self.root
-        for char in text:
+    def search(self, text, tokens=[], node='root'):
+        if node == 'root':
+            node = self.root
+
+        for i, char in enumerate(text):
             if char in node.children:
                 node = node.children[char]
-                if node.token_index != -1:
-                    return node.token_index
+
+                return self.search(text[i:-1], tokens, node)
+            elif i >= len(tokens):
+                return node.token_index
             else:
-                break
-        return -1
+                tokens.append(node.token_index)
+                return self.search(text[i:-1], tokens, 'root')
+
+        return node
 
 
 # todo identify gaps based on the halving rule
@@ -151,4 +157,6 @@ class GeneticTokenizer:
         self.step_epochs = data['step_epochs']
         self.last_iteration = data['last_iteration']
         self.trie = data['trie']  # Load the Trie structure
+
+tr = Trie()
 
