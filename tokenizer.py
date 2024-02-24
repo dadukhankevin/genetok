@@ -38,18 +38,20 @@ class Trie:
             node = self.root  # Reset node to root for each new starting character
             i = start_index
             last_token_index = -1  # Reset last token index for each new starting character
+            token_length = 0  # Track the length of the last found token
 
             while i < len(text) and char in node.children:
                 node = node.children[char]
                 if node.is_end_of_token:
                     last_token_index = node.token_index  # Update last token index if current node marks the end of a token
+                    token_length = i - start_index + 1  # Update the length of the last found token
                 i += 1
                 if i < len(text):
                     char = text[i]
 
             if last_token_index != -1:
                 tokens.append(last_token_index)  # Append the last found token index
-                start_index += i - start_index  # Move start index to the end of the last found token
+                start_index += token_length  # Move start index to the end of the last found token
             else:
                 start_index += 1  # Move to the next character if no token was found
 
