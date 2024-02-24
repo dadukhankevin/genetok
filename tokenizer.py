@@ -131,11 +131,11 @@ class GeneticTokenizer:
         indices = self.trie.search(text)
         return indices
 
-    def detokenize(self, indices):
+    def detokenize(self, indices, join="|"):
         """
         Detokenize the given list of indices into the original text.
         """
-        return '|'.join(self.tokens[i] for i in indices)
+        return join.join(self.tokens[i] for i in indices)
 
     def interface(self):
         while 1:
