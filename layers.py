@@ -15,6 +15,13 @@ class RangeToken(Individual):
         self.length = len(self.source)
         self.right_frozen = False
         self.left_frozen = False
+        try:
+            while self.token[0] == " ":
+                self.start += 1
+                self.token = self.token[1:-1]
+                self.left_frozen = True
+        except IndexError:
+            pass
     def copy(self):
         return RangeToken(self.gene_pool, self.start, self.end, self.source)
     def mutate(self):
