@@ -59,6 +59,14 @@ class RangeToken(Individual):
         self.right_frozen = new.left_frozen
         self.age = 0
 
+        try:
+            while self.token[0] == " ":
+                self.start += 1
+                self.token = self.token[1:-1]
+                self.left_frozen = True
+        except IndexError:
+            pass
+
 
 
 
