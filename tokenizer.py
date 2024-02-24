@@ -59,7 +59,8 @@ class Trie:
 
 # todo identify gaps based on the halving rule
 class GeneticTokenizer:
-    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5, families=2, step_epochs: int = 1, existing_tokens: list = []):
+    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5,
+                 families=2, step_epochs: int = 1, existing_tokens: list = [], right_freezable=False, left_freezable=True):
         self.fitness_results = {}  # for speed boost
         self.tokens = existing_tokens
         self.step_epochs = step_epochs
@@ -72,6 +73,8 @@ class GeneticTokenizer:
         self.mutate_amount = mutate_amount
         self.families = families
         self.trie = Trie()
+        self.right_freezable = right_freezable
+        self.left_freezable = left_freezable
         for i, token in enumerate(self.tokens):
             self.trie.insert(token, i)  # Populate Trie with existing tokens
 
@@ -84,7 +87,8 @@ class GeneticTokenizer:
                 pbar.update(1)
 
     def step(self, text: str):
-        pool = RangePool(min_range=self.min_range, max_range=self.max_range, source_text=text)
+        pool = RangePool(min_range=self.min_range, max_range=self.max_range,
+                         source_text=text, right_freezable=self.right_freezable, left_freezable=self.left_freezable)
 
         max_population = self.max_population
         start_population = self.start_population
@@ -147,9 +151,16 @@ class GeneticTokenizer:
             pickle.dump({
                 'fitness_results': self.fitness_results,
                 'tokens': self.tokens,
-                'step_epochs': self.step_epochs,
-                'last_iteration': self.last_iteration,
                 'trie': self.trie,  # Save the Trie structure
+                'min_range': self.min_range,
+                'max_range': self.max_range,
+                'max_population': self.max_population,
+                'start_population': self.start_population,
+                'threshold': self.threshold,
+                'mutate_amount': self.mutate_amount,
+                'families': self.families,
+                'right_freezable': self.right_freezable,
+                'left_freezable': self.left_freezable,
             }, f)
 
     def load(self, filename):
@@ -161,6 +172,15 @@ class GeneticTokenizer:
 
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
-        self.step_epochs = data['step_epochs']
-        self.last_iteration = data['last_iteration']
         self.trie = data['trie']  # Load the Trie structure
+
+        # Load additional attributes
+        self.min_range = data['min_range']
+        self.max_range = data['max_range']
+        self.max_population = data['max_population']
+        self.start_population = data['start_population']
+        self.threshold = data['threshold']
+        self.mutate_amount = data['mutate_amount']
+        self.families = data['families']
+        self.right_freezable = data['right_freezable']
+        self.left_freezable = data['left_freezable']
