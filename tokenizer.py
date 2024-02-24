@@ -26,27 +26,30 @@ class Trie:
             node = node.children[char]
         node.token_index = index
 
-    def search(self, text, tokens=[], node='root'):
-        if node == 'root':
+    def search(self, text, tokens=None, node=None):
+        if tokens is None:
+            tokens = []
+        if node is None:
             node = self.root
 
-        for i, char in enumerate(text):
+        i = 0
+        while i < len(text):
+            char = text[i]
             if char in node.children:
                 node = node.children[char]
-
-                return self.search(text[i:-1], tokens, node)
-            elif i >= len(tokens):
-                return tokens
-            else:
-                tokens.append(node.token_index)
-                return self.search(text[i:-1], tokens, 'root')
+                if node.token_index != -1:
+                    tokens.append(node.token_index)
+                    node = self.root  # Reset for next token
+                    text = text[i+1:]  # Move past the current character
+                    i = -1  # Reset index for the new slice of text
+            i += 1
 
         return tokens
 
 
 # todo identify gaps based on the halving rule
 class GeneticTokenizer:
-    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5, famileis=2, step_epochs: int = 1, existing_tokens: list = []):
+    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5, families=2, step_epochs: int = 1, existing_tokens: list = []):
         self.fitness_results = {}  # for speed boost
         self.tokens = existing_tokens
         self.step_epochs = step_epochs
@@ -57,7 +60,7 @@ class GeneticTokenizer:
         self.start_population = start_population
         self.threshold = threshold
         self.mutate_amount = mutate_amount
-        self.families = famileis
+        self.families = families
         self.trie = Trie()
         for i, token in enumerate(self.tokens):
             self.trie.insert(token, i)  # Populate Trie with existing tokens
@@ -149,6 +152,3 @@ class GeneticTokenizer:
         self.step_epochs = data['step_epochs']
         self.last_iteration = data['last_iteration']
         self.trie = data['trie']  # Load the Trie structure
-
-tr = Trie()
-
