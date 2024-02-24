@@ -64,7 +64,7 @@ class RangeToken(Individual):
             self.right_frozen = False
 
         elif self.left_freezable:
-            while token[0] == " ":
+            while self.token[0] == " ":
                 self.start += 1
                 if self.start == self.end:
                     self.end += 1
@@ -72,7 +72,7 @@ class RangeToken(Individual):
                 self.left_frozen = True
 
         elif self.right_freezable:
-            while token[-1] == " ":
+            while self.token[-1] == " ":
                 self.end -= 1
                 if self.start == self.end:
                     self.end -= 1
