@@ -13,6 +13,7 @@ class TrieNode:
     def __init__(self):
         self.children = {}
         self.token_index = -1  # -1 indicates no token ends here
+        self.is_end_of_token = False  # Indicates if a complete token ends at this node
 
 class Trie:
     def __init__(self):
@@ -25,24 +26,32 @@ class Trie:
                 node.children[char] = TrieNode()
             node = node.children[char]
         node.token_index = index
+        node.is_end_of_token = True  # Mark the end of a complete token
 
-    def search(self, text, tokens=None, node=None):
-        if tokens is None:
-            tokens = []
-        if node is None:
-            node = self.root
+    def search(self, text):
+        tokens = []
+        node = self.root
+        start_index = 0  # Start index of the current token being processed
 
-        i = 0
-        while i < len(text):
-            char = text[i]
-            if char in node.children:
+        while start_index < len(text):
+            char = text[start_index]
+            node = self.root  # Reset node to root for each new starting character
+            i = start_index
+            last_token_index = -1  # Reset last token index for each new starting character
+
+            while i < len(text) and char in node.children:
                 node = node.children[char]
-                if node.token_index != -1:
-                    tokens.append(node.token_index)
-                    node = self.root  # Reset for next token
-                    text = text[i+1:]  # Move past the current character
-                    i = -1  # Reset index for the new slice of text
-            i += 1
+                if node.is_end_of_token:
+                    last_token_index = node.token_index  # Update last token index if current node marks the end of a token
+                i += 1
+                if i < len(text):
+                    char = text[i]
+
+            if last_token_index != -1:
+                tokens.append(last_token_index)  # Append the last found token index
+                start_index += i - start_index  # Move start index to the end of the last found token
+            else:
+                start_index += 1  # Move to the next character if no token was found
 
         return tokens
 
