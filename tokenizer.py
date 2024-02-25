@@ -15,6 +15,7 @@ class TrieNode:
         self.token_index = -1  # -1 indicates no token ends here
         self.is_end_of_token = False  # Indicates if a complete token ends at this node
 
+
 class Trie:
     def __init__(self):
         self.root = TrieNode()
@@ -59,8 +60,9 @@ class Trie:
 
 # todo identify gaps based on the halving rule
 class GeneticTokenizer:
-    def __init__(self, threshold=.001, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5,
-                 families=2, step_epochs: int = 1, existing_tokens: list = [], right_freezable=False, left_freezable=True):
+    def __init__(self, min_range=2, max_range=6, max_population=11, start_population=10, mutate_amount=5,
+                 families=2, step_epochs: int = 15, existing_tokens: list = [], right_freezable=False,
+                 left_freezable=True):
         self.fitness_results = {}  # for speed boost
         self.tokens = existing_tokens
         self.step_epochs = step_epochs
@@ -69,7 +71,6 @@ class GeneticTokenizer:
         self.last_iteration = 0
         self.max_population = max_population
         self.start_population = start_population
-        self.threshold = threshold
         self.mutate_amount = mutate_amount
         self.families = families
         self.trie = Trie()
@@ -77,7 +78,6 @@ class GeneticTokenizer:
         self.left_freezable = left_freezable
         for i, token in enumerate(self.tokens):
             self.trie.insert(token, i)  # Populate Trie with existing tokens
-
 
     def evolve(self, dataset):
         total = len(dataset)
@@ -106,6 +106,11 @@ class GeneticTokenizer:
         environment.compile(self.fitness, verbose_every=False)
         environment.iteration = self.last_iteration
         environment.evolve(self.step_epochs)
+
+        for individual in environment.individuals[:start_population]:
+            self.tokens.append(individual.token)
+            # Update the trie with the new token
+            self.trie.insert(individual.token, len(self.tokens) - 1)
         self.last_iteration = environment.iteration
 
     def fitness(self, individual: RangeToken):
@@ -117,11 +122,12 @@ class GeneticTokenizer:
         count = source_text.count(token)
         percent = count / individual.length
 
-        if percent > self.threshold:
-            if token not in self.tokens:
-                self.tokens.append(token)
-                # Update the trie with the new token
-                self.trie.insert(token, len(self.tokens) - 1)
+        # if percent > self.threshold:
+        #     if token not in self.tokens:
+        #         self.tokens.append(token)
+        #         # Update the trie with the new token
+        #         self.trie.insert(token, len(self.tokens) - 1)
+
         score = len(token) * percent
         self.fitness_results.update({token: score})
 
@@ -156,7 +162,6 @@ class GeneticTokenizer:
                 'max_range': self.max_range,
                 'max_population': self.max_population,
                 'start_population': self.start_population,
-                'threshold': self.threshold,
                 'mutate_amount': self.mutate_amount,
                 'families': self.families,
                 'right_freezable': self.right_freezable,
