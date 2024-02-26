@@ -187,3 +187,4 @@ class GeneticTokenizer:
         self.families = data['families']
         self.right_freezable = data['right_freezable']
         self.left_freezable = data['left_freezable']
+

@@ -17,29 +17,11 @@ GeneTok is a Python library that employs genetic algorithms to craft a tokenizer
 
 GeneTok requires Python 3.6 or later. You can install GeneTok directly from the source code:
 ```bash
-git clone https://github.com/yourusername/genetok.git
-cd genetok
-pip install .
+pip install genetok
 ```
 ## Quick Start
 
-Here's a quick example to get you started with Genetok:
-```python
-from genetok.tokenizer import GeneticTokenizer
-# Initialize the GeneticTokenizer
-tokenizer = GeneticTokenizer(step_epochs=4)
-#Sample text
-text = "This is a sample text for the GeneticTokenizer."
-# Evolve the tokenizer based on the sample text
-# Pass a list of texts, keep each under like 10,000 chars for best speed
-tokenizer.evolve([text])
-#Tokenize the text
-tokens = tokenizer.tokenize(text)
-print("Tokens:", tokens)
-# Detokenize the tokens back to text
-original_text = tokenizer.detokenize(tokens)
-print("Original Text:", original_text)
-```
+Please look at the Colab notebooka
 
 ## How It Works
 
