@@ -81,7 +81,7 @@ class GeneticTokenizer:
 
     def evolve(self, dataset):
         total = len(dataset)
-        with tqdm(total=total, desc="Evolving tokenizer") as pbar:
+        with tqdm(total=total, desc="Evolving Tokenizer") as pbar:
             for text in dataset:
                 self.step(text)
                 pbar.update(1)
@@ -107,10 +107,11 @@ class GeneticTokenizer:
         environment.iteration = self.last_iteration
         environment.evolve(self.step_epochs)
 
-        for individual in environment.individuals[:start_population]:
-            self.tokens.append(individual.token)
-            # Update the trie with the new token
-            self.trie.insert(individual.token, len(self.tokens) - 1)
+        for individual in environment.individuals:
+            if individual.token not in self.tokens:
+                self.tokens.append(individual.token)
+                self.trie.insert(individual.token, len(self.tokens) - 1)
+
         self.last_iteration = environment.iteration
 
     def fitness(self, individual: RangeToken):
@@ -122,13 +123,7 @@ class GeneticTokenizer:
         count = source_text.count(token)
         percent = count / individual.length
 
-        # if percent > self.threshold:
-        #     if token not in self.tokens:
-        #         self.tokens.append(token)
-        #         # Update the trie with the new token
-        #         self.trie.insert(token, len(self.tokens) - 1)
-
-        score = len(token) * percent
+        score = ((len(token) + len(self.tokenize(token))) * percent) # the less tokenized the text, the higher fitness 
         self.fitness_results.update({token: score})
 
         return score
@@ -151,13 +146,13 @@ class GeneticTokenizer:
 
     def save(self, filename):
         """
-        Save the state of the GeneticTokenizer object to a file, including the Trie.
+        Save the state of the GeneticTokenizer object to a file, excluding the Trie.
         """
         with open(filename + ".gentok", 'wb') as f:
             pickle.dump({
                 'fitness_results': self.fitness_results,
                 'tokens': self.tokens,
-                'trie': self.trie,  # Save the Trie structure
+                # 'trie': self.trie,  # Do not save the Trie structure
                 'min_range': self.min_range,
                 'max_range': self.max_range,
                 'max_population': self.max_population,
@@ -170,21 +165,24 @@ class GeneticTokenizer:
 
     def load(self, filename):
         """
-        Load the state of the GeneticTokenizer object from a file, including the Trie.
+        Load the state of the GeneticTokenizer object from a file, excluding the Trie.
+        Reconstruct the Trie from the loaded tokens.
         """
         with open(filename + ".gentok", 'rb') as f:
             data = pickle.load(f)
 
         self.tokens = data['tokens']
         self.fitness_results = data['fitness_results']
-        self.trie = data['trie']  # Load the Trie structure
+        # self.trie = data['trie']  # Do not load the Trie structure
+        self.trie = Trie()  # Reconstruct the Trie
+        for i, token in enumerate(self.tokens):
+            self.trie.insert(token, i)
 
         # Load additional attributes
         self.min_range = data['min_range']
         self.max_range = data['max_range']
         self.max_population = data['max_population']
         self.start_population = data['start_population']
-        self.threshold = data['threshold']
         self.mutate_amount = data['mutate_amount']
         self.families = data['families']
         self.right_freezable = data['right_freezable']
